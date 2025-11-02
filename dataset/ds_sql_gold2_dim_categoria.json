@@ -1,0 +1,41 @@
+{
+	"name": "ds_sql_gold2_dim_categoria",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_examen",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "id_categoria",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "codigo",
+				"type": "nvarchar"
+			},
+			{
+				"name": "categoria",
+				"type": "nvarchar"
+			},
+			{
+				"name": "subcategoria",
+				"type": "nvarchar"
+			},
+			{
+				"name": "maintenance",
+				"type": "bit"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold2",
+			"table": "dim_categoria"
+		}
+	}
+}

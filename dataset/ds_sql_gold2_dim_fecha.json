@@ -1,0 +1,29 @@
+{
+	"name": "ds_sql_gold2_dim_fecha",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_examen",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "id_fecha",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha",
+				"type": "date"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold2",
+			"table": "dim_fecha"
+		}
+	}
+}

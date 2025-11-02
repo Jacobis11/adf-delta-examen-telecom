@@ -1,0 +1,66 @@
+{
+	"name": "ds_sql_gold2_fact_ventas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_examen",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "id_fact",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "orden_num",
+				"type": "nvarchar"
+			},
+			{
+				"name": "cantidad",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "precio_unit",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "venta_total",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "id_fecha_orden",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "id_fecha_envio",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "id_cliente",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "id_producto",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "gold2",
+			"table": "fact_ventas"
+		}
+	}
+}

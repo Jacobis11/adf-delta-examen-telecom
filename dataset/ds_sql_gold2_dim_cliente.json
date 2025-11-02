@@ -1,0 +1,58 @@
+{
+	"name": "ds_sql_gold2_dim_cliente",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_examen",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "id_cliente",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "cst_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "cst_key",
+				"type": "nvarchar"
+			},
+			{
+				"name": "nombre",
+				"type": "nvarchar"
+			},
+			{
+				"name": "apellido",
+				"type": "nvarchar"
+			},
+			{
+				"name": "genero",
+				"type": "nchar"
+			},
+			{
+				"name": "estado_civil",
+				"type": "nchar"
+			},
+			{
+				"name": "fecha_nac",
+				"type": "date"
+			},
+			{
+				"name": "pais",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold2",
+			"table": "dim_cliente"
+		}
+	}
+}
