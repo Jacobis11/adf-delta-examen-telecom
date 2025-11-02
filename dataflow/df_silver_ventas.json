@@ -1,0 +1,52 @@
+{
+	"name": "df_silver_ventas",
+	"properties": {
+		"folder": {
+			"name": "SILVER"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_sql_detalle_ventas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          sls_ord_num as string,",
+				"          sls_prd_key as string,",
+				"          sls_cust_id as string,",
+				"          sls_order_dt as string,",
+				"          sls_ship_dt as string,",
+				"          sls_sales as string,",
+				"          sls_quantity as string,",
+				"          sls_price as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source1",
+				"source1 derive(ord_num = toString(trim(sls_ord_num)),",
+				"          prd_key = toString(trim(sls_prd_key)),",
+				"          cust_id = toInteger(sls_cust_id),",
+				"          order_dt = toDate(toString(sls_order_dt), 'yyyyMMdd'),",
+				"          ship_dt = toDate(toString(sls_ship_dt), 'yyyyMMdd'),",
+				"          quant = toInteger(sls_quantity),",
+				"          price = toDecimal(sls_price, 10, 2),",
+				"          sales = toDecimal(sls_sales, 12, 2)\r",
+				"\r",
+				") ~> derivedColumn1"
+			]
+		}
+	}
+}
