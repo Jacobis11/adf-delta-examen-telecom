@@ -1,0 +1,57 @@
+{
+	"name": "ds_sql_silver_clientes",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_examen",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "SILVER"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "cst_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "cst_key",
+				"type": "nvarchar"
+			},
+			{
+				"name": "cst_firstname",
+				"type": "nvarchar"
+			},
+			{
+				"name": "cst_lastname",
+				"type": "nvarchar"
+			},
+			{
+				"name": "cst_marital_status",
+				"type": "nchar"
+			},
+			{
+				"name": "cst_gndr",
+				"type": "nchar"
+			},
+			{
+				"name": "fecha_nac",
+				"type": "date"
+			},
+			{
+				"name": "genero_ext",
+				"type": "nvarchar"
+			},
+			{
+				"name": "pais",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "clientes_conformado"
+		}
+	}
+}
