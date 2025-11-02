@@ -53,7 +53,7 @@
 		],
 		"typeProperties": {
 			"schema": "silver",
-			"table": "ventas_conformado"
+			"table": "ventas_conformad0"
 		}
 	}
 }
