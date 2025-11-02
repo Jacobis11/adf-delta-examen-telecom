@@ -15,10 +15,21 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_sql_silver_ventas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
+				},
+				{
+					"name": "cast1"
 				}
 			],
 			"scriptLines": [
@@ -45,7 +56,49 @@
 				"          price = toDecimal(sls_price, 10, 2),",
 				"          sales = toDecimal(sls_sales, 12, 2)\r",
 				"\r",
-				") ~> derivedColumn1"
+				") ~> derivedColumn1",
+				"derivedColumn1 cast(output(",
+				"          sls_ord_num as string,",
+				"          sls_prd_key as string,",
+				"          sls_cust_id as integer,",
+				"          sls_order_dt as date 'yyyyMMdd',",
+				"          sls_ship_dt as date 'yyyyMMdd',",
+				"          sls_sales as decimal(12,2),",
+				"          sls_quantity as integer,",
+				"          sls_price as decimal(10,2),",
+				"          sales as decimal(10,2)",
+				"     ),",
+				"     errors: true) ~> cast1",
+				"cast1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          sls_ord_num as integer,",
+				"          sls_prd_key as string,",
+				"          sls_cust_id as integer,",
+				"          sls_order_dt as date,",
+				"          sls_ship_dt as date,",
+				"          sls_sales as decimal(18,2),",
+				"          sls_quantity as integer,",
+				"          sls_price as decimal(18,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          sls_prd_key,",
+				"          sls_ord_num,",
+				"          sls_cust_id,",
+				"          sls_order_dt,",
+				"          sls_ship_dt,",
+				"          sls_sales,",
+				"          sls_quantity,",
+				"          sls_price",
+				"     )) ~> sink1"
 			]
 		}
 	}
