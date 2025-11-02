@@ -1,0 +1,63 @@
+{
+	"name": "df_silver_productos",
+	"properties": {
+		"folder": {
+			"name": "SILVER"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_sql_productos",
+						"type": "DatasetReference"
+					},
+					"name": "productos"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_sql_productos_cat_mant",
+						"type": "DatasetReference"
+					},
+					"name": "productoscatmant"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "drvcatidnormaliza"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          prd_id as string,",
+				"          prd_key as string,",
+				"          prd_nm as string,",
+				"          prd_cost as string,",
+				"          prd_line as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> productos",
+				"source(output(",
+				"          ID as string,",
+				"          CAT as string,",
+				"          SUBCAT as string,",
+				"          MAINTENANCE as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> productoscatmant",
+				"productoscatmant derive(id_norm = upper(trim(ID))) ~> drvcatidnormaliza",
+				"productos derive(id_norm_left = upper(concat(substring(prd_key, 0, 2), '_', substring(prd_key, 3, 2)))\r",
+				"\r",
+				") ~> derivedColumn1"
+			]
+		}
+	}
+}
