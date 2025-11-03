@@ -1,0 +1,116 @@
+{
+	"name": "df_gold2_dim_clientes",
+	"properties": {
+		"folder": {
+			"name": "GOLD"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_sql_silver_clientes",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_sql_gold2_dim_cliente",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select1"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "aggregate1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          cst_id as integer,",
+				"          cst_key as string,",
+				"          cst_firstname as string,",
+				"          cst_lastname as string,",
+				"          cst_marital_status as string,",
+				"          cst_gndr as string,",
+				"          fecha_nac as date,",
+				"          genero_ext as string,",
+				"          pais as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source1",
+				"source1 select(mapColumn(",
+				"          cst_id,",
+				"          cst_key,",
+				"          cst_firstname,",
+				"          cst_lastname,",
+				"          cst_marital_status,",
+				"          cst_gndr,",
+				"          fecha_nac,",
+				"          pais",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 derive(cst_gndr = upper(substring(trim(cst_gndr), 0, 1)),",
+				"          cst_marital_status = upper(substring(trim(cst_marital_status), 0, 1)),",
+				"          pais = upper(trim(pais))) ~> derivedColumn1",
+				"derivedColumn1 filter(!isNull(cst_id)",
+				") ~> filter1",
+				"filter1 aggregate(groupBy(cst_id),",
+				"     cst_key = first(cst_key),",
+				"          cst_firstname = first(cst_firstname),",
+				"          cst_lastname = first(cst_lastname),",
+				"          cst_marital_status = first(cst_marital_status),",
+				"          cst_gndr = first(cst_gndr),",
+				"          fecha_nac = first(fecha_nac),",
+				"          pais = first(pais)) ~> aggregate1",
+				"aggregate1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id_cliente as integer,",
+				"          cst_id as integer,",
+				"          cst_key as string,",
+				"          nombre as string,",
+				"          apellido as string,",
+				"          genero as string,",
+				"          estado_civil as string,",
+				"          fecha_nac as date,",
+				"          pais as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          cst_id,",
+				"          cst_key,",
+				"          nombre = cst_firstname,",
+				"          apellido = cst_lastname,",
+				"          genero = cst_gndr,",
+				"          estado_civil = cst_marital_status,",
+				"          fecha_nac,",
+				"          pais",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

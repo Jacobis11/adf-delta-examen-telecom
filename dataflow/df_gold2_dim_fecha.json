@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_sql_gold2_dim_fecha",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "selectorder"
@@ -25,6 +33,15 @@
 				},
 				{
 					"name": "union1"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "selectfecha"
 				}
 			],
 			"scriptLines": [
@@ -52,7 +69,33 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select2",
-				"select2, selectorder union(byName: true)~> union1"
+				"select2, selectorder union(byName: true)~> union1",
+				"union1 filter(!isNull(fecha)",
+				") ~> filter1",
+				"filter1 aggregate(groupBy(fecha),",
+				"     cnt_tmp = count(1)) ~> aggregate1",
+				"aggregate1 select(mapColumn(",
+				"          fecha",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectfecha",
+				"selectfecha sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id_fecha as integer,",
+				"          fecha as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          fecha",
+				"     )) ~> sink1"
 			]
 		}
 	}
