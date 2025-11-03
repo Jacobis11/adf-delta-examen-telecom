@@ -6,11 +6,86 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_sql_silver_productos",
+						"type": "DatasetReference"
+					},
+					"name": "prod"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_sql_gold2_dim_categoria",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "select1"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "join1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          prd_id as integer,",
+				"          prd_key as string,",
+				"          prd_nm as string,",
+				"          prd_cost as decimal(18,2),",
+				"          prd_line as string,",
+				"          cat_id as string,",
+				"          categoria as string,",
+				"          subcategoria as string,",
+				"          maintenance as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> prod",
+				"source(output(",
+				"          id_categoria as integer,",
+				"          codigo as string,",
+				"          categoria as string,",
+				"          subcategoria as string,",
+				"          maintenance as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source2",
+				"prod select(mapColumn(",
+				"          prd_id,",
+				"          prd_key,",
+				"          producto = prd_nm,",
+				"          costo = prd_cost,",
+				"          linea = prd_line,",
+				"          cat_id,",
+				"          categoria,",
+				"          subcategoria",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"source2 select(mapColumn(",
+				"          id_categoria,",
+				"          codigo,",
+				"          categoria,",
+				"          subcategoria",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"select1, select2 join(ERROR_FUNCTION('') == ERROR_FUNCTION(''),",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1"
 			]
 		}
 	}
