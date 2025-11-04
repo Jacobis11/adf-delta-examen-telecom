@@ -6,11 +6,213 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
-			"sinks": [],
-			"transformations": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_sql_silver_ventas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_sql_gold2_dim_producto",
+						"type": "DatasetReference"
+					},
+					"name": "DimProducto"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_sql_gold2_dim_cliente",
+						"type": "DatasetReference"
+					},
+					"name": "DimCliente"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_sql_gold2_dim_fecha",
+						"type": "DatasetReference"
+					},
+					"name": "FechaOrden"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_sql_gold2_dim_fecha",
+						"type": "DatasetReference"
+					},
+					"name": "Fechaenvioo"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_sql_gold2_fact_ventas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "lookup2"
+				},
+				{
+					"name": "lookup3"
+				},
+				{
+					"name": "lookup4"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "filter1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          sls_ord_num as integer,",
+				"          sls_prd_key as string,",
+				"          sls_cust_id as integer,",
+				"          sls_order_dt as date,",
+				"          sls_ship_dt as date,",
+				"          sls_sales as decimal(18,2),",
+				"          sls_quantity as integer,",
+				"          sls_price as decimal(18,2)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n  sls_ord_num,\\n  sls_prd_key,\\n  sls_cust_id,\\n  sls_order_dt,\\n  sls_ship_dt,\\n  sls_sales,\\n  sls_quantity,\\n  sls_price\\nFROM silver.ventas_conformad0;\\n',",
+				"     format: 'query') ~> source1",
+				"source(output(",
+				"          id_producto as integer,",
+				"          prd_id as integer,",
+				"          prd_key as string,",
+				"          producto as string,",
+				"          costo as decimal(18,2),",
+				"          linea as string,",
+				"          id_categoria as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT id_producto, prd_key\\nFROM gold2.dim_producto\\n',",
+				"     format: 'query') ~> DimProducto",
+				"source(output(",
+				"          id_cliente as integer,",
+				"          cst_id as integer,",
+				"          cst_key as string,",
+				"          nombre as string,",
+				"          apellido as string,",
+				"          genero as string,",
+				"          estado_civil as string,",
+				"          fecha_nac as date,",
+				"          pais as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT id_cliente, cst_id\\nFROM gold2.dim_cliente;\\n',",
+				"     format: 'query') ~> DimCliente",
+				"source(output(",
+				"          id_fecha as integer,",
+				"          fecha as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT id_fecha AS id_fecha_orden, fecha_iso AS fecha_orden_iso\\nFROM gold2.dim_fecha;\\n',",
+				"     format: 'query') ~> FechaOrden",
+				"source(output(",
+				"          id_fecha as integer,",
+				"          fecha as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT id_fecha AS id_fecha_envio, fecha_iso AS fecha_envio_iso\\nFROM gold2.dim_fecha;\\n\\n',",
+				"     format: 'query') ~> Fechaenvioo",
+				"source1 derive(orden_num = coalesce(trim(toString(sls_ord_num)), ''),",
+				"          cantidad = toInteger(sls_quantity),",
+				"          precio_unit = toDecimal(sls_price,18,2),",
+				"          venta_total = toDecimal(sls_sales,18,2),",
+				"          prd_key_norm = upper(trim(sls_prd_key)),",
+				"          cust_norm = toInteger(sls_cust_id),",
+				"          order_dt_norm = toString(sls_order_dt, 'yyyy-MM-dd'),",
+				"          ship_dt_norm = toString(sls_ship_dt, 'yyyy-MM-dd')) ~> derivedColumn1",
+				"derivedColumn1, DimProducto lookup(prd_key_norm == prd_key,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1, DimCliente lookup(cust_norm == cst_id,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup2",
+				"lookup2, FechaOrden lookup(order_dt_norm == fecha_str\r",
+				",",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup3",
+				"lookup3, Fechaenvioo lookup(ship_dt_norm == fecha_str,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup4",
+				"lookup4 select(mapColumn(",
+				"          orden_num,",
+				"          cantidad,",
+				"          precio_unit,",
+				"          venta_total,",
+				"          id_producto,",
+				"          id_cliente,",
+				"          id_fecha = FechaOrden@id_fecha,",
+				"          id_fecha = Fechaenvioo@id_fecha,",
+				"          fecha = Fechaenvioo@fecha",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 filter(!isNull(id_cliente) ",
+				"&& !isNull(id_producto) ",
+				"&& !isNull(id_fecha) ",
+				"",
+				") ~> filter1",
+				"filter1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id_fact as integer,",
+				"          orden_num as string,",
+				"          cantidad as integer,",
+				"          precio_unit as decimal(18,2),",
+				"          venta_total as decimal(18,2),",
+				"          id_fecha_orden as integer,",
+				"          id_fecha_envio as integer,",
+				"          id_cliente as integer,",
+				"          id_producto as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          orden_num,",
+				"          cantidad,",
+				"          precio_unit,",
+				"          venta_total,",
+				"          id_fecha_orden = id_fecha,",
+				"          id_fecha_envio = id_fecha,",
+				"          id_cliente,",
+				"          id_producto",
+				"     )) ~> sink1"
 			]
 		}
 	}
